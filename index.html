@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Div to top</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      main {
+        display: flex;
+        flex-direction: column;
+      }
+      div {
+        display: flex;
+        height: 100px;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="root"></main>
+
+    <script>
+      'use strict'
+      function main () {
+        const root = document.getElementById('root')
+        // Initiate id config for clicked items
+        const idConfig = new Set()
+
+        let i = 0
+        
+        // Initiate DOM
+        while (i < 100) {
+          const divWithText = Object.assign(document.createElement('div'), { 
+            innerText: `div-${i}`,
+            id: i,
+          })
+          // Initiate trigger date with: '0', because dataset converting everything to string.
+          divWithText.dataset.ontop = '0'
+          root.appendChild(divWithText)
+          i += 1
+        }
+
+        // Handle recursion function to find element id to insert before
+        const findItemIdToInsertBefore = id => {
+          let nextItemToAppendId = (Number(id) + 1).toString()
+
+          if (idConfig.has(nextItemToAppendId)) {
+            return findItemIdToInsertBefore(nextItemToAppendId)
+          } else {
+            return nextItemToAppendId
+          }
+        }
+
+        // Handle click by div
+        const handleClick = event => {
+          const { target: { id, dataset: { ontop } }} = event 
+          const clickedDiv = document.getElementById(id)
+          const firstChild = root.firstElementChild
+
+          // Adding div top of the page
+          if (ontop === '0') {
+            idConfig.add(id)
+            clickedDiv.dataset.ontop = '1'
+            
+            // if - it's top element, and not be clicked before, ignore
+            if (firstChild.id === id) {
+              return
+            // else - remove element from his current position and move to the top of the page
+            } else {
+              clickedDiv.remove()
+              root.insertBefore(clickedDiv, firstChild)
+            }
+          // if - element was clicked before, move them to his previous position 
+          } else if (ontop === '1') {
+            clickedDiv.remove()
+            idConfig.delete(id)
+            clickedDiv.dataset.ontop = '0'
+
+            const itemIdToInsert = findItemIdToInsertBefore(id)
+            const itemToInsertBefore = document.getElementById(itemIdToInsert)
+            root.insertBefore(clickedDiv, itemToInsertBefore)
+          }
+        }
+
+        window.addEventListener('click', handleClick)
+      }
+
+      main()
+    </script>
+  </body>
+</html>
