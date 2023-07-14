@@ -85,6 +85,10 @@
         }
 
         window.addEventListener('click', handleClick)
+        // Handle click for phone devices && tablets
+        if (window.innerWidth <= 800) {
+          window.addEventListener('touchend', handleClick)
+        }
       }
 
       main()
